@@ -3,9 +3,6 @@
 Built on top of CLIP Interrogator by [@pharmapsychotic](https://twitter.com/pharmapsychotic)
 
 Generate prompts suited for aerial robotics (real and simlation) to be used for CLIPSeg.
-Run on Colab, HuggingFace, and Replicate!
-
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/pharmapsychotic/clip-interrogator/blob/main/clip_interrogator.ipynb) [![Generic badge](https://img.shields.io/badge/🤗-Open%20in%20Spaces-blue.svg)](https://huggingface.co/spaces/pharma/CLIP-Interrogator) [![Replicate](https://replicate.com/pharmapsychotic/clip-interrogator/badge)](https://replicate.com/pharmapsychotic/clip-interrogator) [![Lambda](https://img.shields.io/badge/%CE%BB-Lambda-blue)](https://cloud.lambdalabs.com/demos/ml/CLIP-Interrogator)
 
 ## About
 
