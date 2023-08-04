@@ -211,12 +211,12 @@ class Interrogator():
         frame = self.frames.rank(image_features, 1)[0]
         positive = self.positives.rank(image_features, 1)[0]
         context = self.contexts.rank(image_features, 1)[0]
-        flaves = ", ".join(self.envs.rank(image_features, max_envs))
+        env = ", ".join(self.envs.rank(image_features, max_envs))
 
         if caption.startswith(res):
-            prompt = f"{caption} {frame}, {positive}, {context}, {flaves}"
+            prompt = f"{caption} {frame}, {positive}, {context}, {env}"
         else:
-            prompt = f"{caption}, {res} {frame}, {positive}, {context}, {flaves}"
+            prompt = f"{caption}, {res} {frame}, {positive}, {context}, {env}"
 
         return _truncate_to_fit(prompt, self.tokenize)
 
@@ -235,18 +235,18 @@ class Interrogator():
         to help build a aerial prompt to pair with the regular positive prompt and often 
         improve the results of generated images particularly with CLIPSeg."""
         image_features = self.image_to_features(image)
-        flaves = self.envs.rank(image_features, self.config.env_intermediate_count, reverse=True)
-        flaves = flaves + self.aerial.labels
-        return self.chain(image_features, flaves, max_count=max_envs, reverse=True, desc="aerial chain")
+        env = self.envs.rank(image_features, self.config.env_intermediate_count, reverse=True)
+        env = env + self.aerial.labels
+        return self.chain(image_features, env, max_count=max_envs, reverse=True, desc="aerial chain")
 
     def interrogate(self, image: Image, min_envs: int=8, max_envs: int=32, caption: Optional[str]=None) -> str:
         caption = caption or self.generate_caption(image)
         image_features = self.image_to_features(image)
 
         merged = _merge_tables([self.frames, self.envs, self.res, self.contexts, self.positives], self)
-        flaves = merged.rank(image_features, self.config.env_intermediate_count)
+        env = merged.rank(image_features, self.config.env_intermediate_count)
         best_prompt, best_sim = caption, self.similarity(image_features, caption)
-        best_prompt = self.chain(image_features, flaves, best_prompt, best_sim, min_count=min_envs, max_count=max_envs, desc="env chain")
+        best_prompt = self.chain(image_features, env, best_prompt, best_sim, min_count=min_envs, max_count=max_envs, desc="env chain")
 
         fast_prompt = self.interrogate_fast(image, max_envs, caption=caption)
         classic_prompt = self.interrogate_classic(image, max_envs, caption=caption)
