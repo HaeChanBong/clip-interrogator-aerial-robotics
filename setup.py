@@ -4,13 +4,13 @@ import pkg_resources
 from setuptools import setup, find_packages
 
 setup(
-    name="clip-interrogator",
+    name="clip-interrogator-aerial-robotics",
     version="0.6.0",
     license='MIT',
-    author='pharmapsychotic',
-    author_email='me@pharmapsychotic.com',
-    url='https://github.com/pharmapsychotic/clip-interrogator',
-    description="Generate a prompt from an image",
+    author='HaechanMarkBong',
+    author_email='haechan.bong@gmail.com',
+    url='https://github.com/HaeChanBong/clip-interrogator-aerial-robotics/tree/HaechanMarkBong-patch-1',
+    description="Generate a prompt from an aerial image",
     long_description=open('README.md', encoding='utf-8').read(),
     long_description_content_type="text/markdown",
     packages=find_packages(),
@@ -30,5 +30,5 @@ setup(
         'Topic :: Scientific/Engineering',
         'Topic :: Scientific/Engineering :: Artificial Intelligence',
     ],
-    keywords=['blip','clip','prompt-engineering','stable-diffusion','text-to-image'],
+    keywords=['blip','clip','prompt-engineering','CLIPSeg','text-to-image'],
 )
