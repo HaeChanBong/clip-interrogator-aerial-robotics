@@ -133,7 +133,7 @@ class Interrogator():
         self.ress = LabelTable(load_list(config.data_path, 'ress.txt'), "ress", self)
         self.contexts = LabelTable(load_list(config.data_path, 'contexts.txt'), "contexts", self)
         self.positives = LabelTable(positive_list, "positives", self)
-        self.negative = LabelTable(load_list(config.data_path, 'negative.txt'), "negative", self)
+        self.aerial = LabelTable(load_list(config.data_path, 'aerial.txt'), "aerial", self)
 
         end_time = time.time()
         if not config.quiet:
@@ -230,14 +230,14 @@ class Interrogator():
         tops = merged.rank(image_features, max_envs)
         return _truncate_to_fit(caption + ", " + ", ".join(tops), self.tokenize)
 
-    def interrogate_negative(self, image: Image, max_envs: int = 32) -> str:
-        """Negative mode chains together the most dissimilar terms to the image. It can be used
-        to help build a negative prompt to pair with the regular positive prompt and often 
+    def interrogate_aerial(self, image: Image, max_envs: int = 32) -> str:
+        """aerial mode chains together the most dissimilar terms to the image. It can be used
+        to help build a aerial prompt to pair with the regular positive prompt and often 
         improve the results of generated images particularly with CLIPSeg."""
         image_features = self.image_to_features(image)
         flaves = self.envs.rank(image_features, self.config.env_intermediate_count, reverse=True)
-        flaves = flaves + self.negative.labels
-        return self.chain(image_features, flaves, max_count=max_envs, reverse=True, desc="Negative chain")
+        flaves = flaves + self.aerial.labels
+        return self.chain(image_features, flaves, max_count=max_envs, reverse=True, desc="aerial chain")
 
     def interrogate(self, image: Image, min_envs: int=8, max_envs: int=32, caption: Optional[str]=None) -> str:
         caption = caption or self.generate_caption(image)
