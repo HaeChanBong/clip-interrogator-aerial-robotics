@@ -133,7 +133,7 @@ class Interrogator():
         self.res = LabelTable(load_list(config.data_path, 'res.txt'), "res", self)
         self.contexts = LabelTable(load_list(config.data_path, 'contexts.txt'), "contexts", self)
         self.positives = LabelTable(positive_list, "positives", self)
-        self.aerial = LabelTable(load_list(config.data_path, 'aerial.txt'), "aerial", self)
+        self.aerials = LabelTable(load_list(config.data_path, 'aerials.txt'), "aerials", self)
 
         end_time = time.time()
         if not config.quiet:
@@ -236,7 +236,7 @@ class Interrogator():
         improve the results of generated images particularly with CLIPSeg."""
         image_features = self.image_to_features(image)
         env = self.envs.rank(image_features, self.config.env_intermediate_count, reverse=True)
-        env = env + self.aerial.labels
+        env = env + self.aerials.labels
         return self.chain(image_features, env, max_count=max_envs, reverse=True, desc="aerial chain")
 
     def interrogate(self, image: Image, min_envs: int=8, max_envs: int=32, caption: Optional[str]=None) -> str:
