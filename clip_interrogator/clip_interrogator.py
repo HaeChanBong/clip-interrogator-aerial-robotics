@@ -130,7 +130,7 @@ class Interrogator():
         self._prepare_clip()
         self.frames = LabelTable(frames, "frames", self)
         self.envs = LabelTable(load_list(config.data_path, 'envs.txt'), "envs", self)
-        self.ress = LabelTable(load_list(config.data_path, 'ress.txt'), "ress", self)
+        self.res = LabelTable(load_list(config.data_path, 'res.txt'), "res", self)
         self.contexts = LabelTable(load_list(config.data_path, 'contexts.txt'), "contexts", self)
         self.positives = LabelTable(positive_list, "positives", self)
         self.aerial = LabelTable(load_list(config.data_path, 'aerial.txt'), "aerial", self)
@@ -207,7 +207,7 @@ class Interrogator():
         caption = caption or self.generate_caption(image)
         image_features = self.image_to_features(image)
 
-        res = self.ress.rank(image_features, 1)[0]
+        res = self.res.rank(image_features, 1)[0]
         frame = self.frames.rank(image_features, 1)[0]
         positive = self.positives.rank(image_features, 1)[0]
         context = self.contexts.rank(image_features, 1)[0]
@@ -226,7 +226,7 @@ class Interrogator():
         are less readable."""
         caption = caption or self.generate_caption(image)
         image_features = self.image_to_features(image)
-        merged = _merge_tables([self.frames, self.envs, self.ress, self.contexts, self.positives], self)
+        merged = _merge_tables([self.frames, self.envs, self.res, self.contexts, self.positives], self)
         tops = merged.rank(image_features, max_envs)
         return _truncate_to_fit(caption + ", " + ", ".join(tops), self.tokenize)
 
@@ -243,7 +243,7 @@ class Interrogator():
         caption = caption or self.generate_caption(image)
         image_features = self.image_to_features(image)
 
-        merged = _merge_tables([self.frames, self.envs, self.ress, self.contexts, self.positives], self)
+        merged = _merge_tables([self.frames, self.envs, self.res, self.contexts, self.positives], self)
         flaves = merged.rank(image_features, self.config.env_intermediate_count)
         best_prompt, best_sim = caption, self.similarity(image_features, caption)
         best_prompt = self.chain(image_features, flaves, best_prompt, best_sim, min_count=min_envs, max_count=max_envs, desc="env chain")
