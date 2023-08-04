@@ -211,12 +211,13 @@ class Interrogator():
         frame = self.frames.rank(image_features, 1)[0]
         positive = self.positives.rank(image_features, 1)[0]
         context = self.contexts.rank(image_features, 1)[0]
+        aerial = self.aerials.rank(image_features, 1)[0]
         env = ", ".join(self.envs.rank(image_features, max_envs))
 
         if caption.startswith(res):
-            prompt = f"{caption} {frame}, {positive}, {context}, {env}"
+            prompt = f"{positive}, {frame}, {caption}, {context}, {env}"
         else:
-            prompt = f"{caption}, {res} {frame}, {positive}, {context}, {env}"
+            prompt = f"{positive}, {res}, {frame}, {caption}, {context}, {env}"
 
         return _truncate_to_fit(prompt, self.tokenize)
 
