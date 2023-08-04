@@ -20,7 +20,7 @@ class Predictor(BasePredictor):
         clip_model_name: str = Input(
             default="ViT-L-14/openai",
             choices=["ViT-L-14/openai", "ViT-H-14/laion2b_s32b_b79k"],
-            description="Choose ViT-L for Stable Diffusion 1, and ViT-H for Stable Diffusion 2",
+            description="Choose ViT-L for CLIPSeg, and ViT-H for Stable Diffusion 2",
         ),        
         mode: str = Input(
             default="best",
