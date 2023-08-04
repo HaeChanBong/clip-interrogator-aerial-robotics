@@ -30,19 +30,21 @@ def image_analysis(image, clip_model_name):
     image = image.convert('RGB')
     image_features = ci.image_to_features(image)
 
-    top_mediums = ci.mediums.rank(image_features, 5)
-    top_artists = ci.artists.rank(image_features, 5)
-    top_movements = ci.movements.rank(image_features, 5)
-    top_trendings = ci.trendings.rank(image_features, 5)
-    top_flavors = ci.flavors.rank(image_features, 5)
+    top_res = ci.res.rank(image_features, 5)
+    top_frames = ci.frames.rank(image_features, 5)
+    top_contexts = ci.contexts.rank(image_features, 5)
+    top_aerials = ci.aerials.rank(image_features, 5)
+    top_positives = ci.positives.rank(image_features, 5)
+    top_envs = ci.envs.rank(image_features, 5)
 
-    medium_ranks = {medium: sim for medium, sim in zip(top_mediums, ci.similarities(image_features, top_mediums))}
-    artist_ranks = {artist: sim for artist, sim in zip(top_artists, ci.similarities(image_features, top_artists))}
-    movement_ranks = {movement: sim for movement, sim in zip(top_movements, ci.similarities(image_features, top_movements))}
-    trending_ranks = {trending: sim for trending, sim in zip(top_trendings, ci.similarities(image_features, top_trendings))}
-    flavor_ranks = {flavor: sim for flavor, sim in zip(top_flavors, ci.similarities(image_features, top_flavors))}
+    res_ranks = {res: sim for res, sim in zip(top_res, ci.similarities(image_features, top_res))}
+    frame_ranks = {frame: sim for frame, sim in zip(top_frames, ci.similarities(image_features, top_frames))}
+    context_ranks = {context: sim for context, sim in zip(top_contexts, ci.similarities(image_features, top_contexts))}
+    aerial_ranks = {aerial: sim for aerial, sim in zip(top_aerials, ci.similarities(image_features, top_aerials))}
+    positive_ranks = {positive: sim for positive, sim in zip(top_positives, ci.similarities(image_features, top_positives))}
+    env_ranks = {env: sim for env, sim in zip(top_envs, ci.similarities(image_features, top_envs))}
     
-    return medium_ranks, artist_ranks, movement_ranks, trending_ranks, flavor_ranks
+    return res_ranks, frame_ranks, context_ranks, positive_ranks, env_ranks
 
 def image_to_prompt(image, mode, clip_model_name, blip_model_name):
     if blip_model_name != ci.config.caption_model_name:
@@ -81,13 +83,14 @@ def analyze_tab():
             image = gr.Image(type='pil', label="Image")
             model = gr.Dropdown(list_clip_models(), value='ViT-L-14/openai', label='CLIP Model')
         with gr.Row():
-            medium = gr.Label(label="Medium", num_top_classes=5)
-            artist = gr.Label(label="Artist", num_top_classes=5)        
-            movement = gr.Label(label="Movement", num_top_classes=5)
-            trending = gr.Label(label="Trending", num_top_classes=5)
-            flavor = gr.Label(label="Flavor", num_top_classes=5)
+            res = gr.Label(label="res", num_top_classes=5)
+            frame = gr.Label(label="frame", num_top_classes=5)        
+            context = gr.Label(label="context", num_top_classes=5)
+            aerialt = gr.Label(label="aerial", num_top_classes=5)
+            positive = gr.Label(label="positive", num_top_classes=5)
+            env = gr.Label(label="env", num_top_classes=5)
     button = gr.Button("Analyze")
-    button.click(image_analysis, inputs=[image, model], outputs=[medium, artist, movement, trending, flavor])
+    button.click(image_analysis, inputs=[image, model], outputs=[res, frame, context, aerial, positive, env])
 
 with gr.Blocks() as ui:
     gr.Markdown("# <center>🕵️‍♂️ CLIP Interrogator 🕵️‍♂️</center>")
