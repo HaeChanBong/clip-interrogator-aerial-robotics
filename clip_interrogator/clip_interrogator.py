@@ -50,7 +50,7 @@ class Config:
     chunk_size: int = 2048      # batch size for CLIP, use smaller for lower VRAM
     data_path: str = os.path.join(os.path.dirname(__file__), 'data')
     device: str = ("mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu")
-    flavor_intermediate_count: int = 2048
+    env_intermediate_count: int = 2048
     quiet: bool = False # when quiet progress bars are not shown
 
     def apply_low_vram_defaults(self):
@@ -58,7 +58,7 @@ class Config:
         self.caption_offload = True
         self.clip_offload = True
         self.chunk_size = 1024
-        self.flavor_intermediate_count = 1024
+        self.env_intermediate_count = 1024
 
 class Interrogator():
     def __init__(self, config: Config):
@@ -116,24 +116,23 @@ class Interrogator():
             self.clip_preprocess = config.clip_preprocess
         self.tokenize = open_clip.get_tokenizer(clip_model_name)
 
-        sites = ['Artstation', 'behance', 'cg society', 'cgsociety', 'deviantart', 'dribbble', 
-                 'flickr', 'instagram', 'pexels', 'pinterest', 'pixabay', 'pixiv', 'polycount', 
-                 'reddit', 'shutterstock', 'tumblr', 'unsplash', 'zbrush central']
-        trending_list = [site for site in sites]
-        trending_list.extend(["trending on "+site for site in sites])
-        trending_list.extend(["featured on "+site for site in sites])
-        trending_list.extend([site+" contest winner" for site in sites])
+        positives = ["grass", "backyard", "frontyard", "courtyard", "lawn", "greenery", "garden",
+                     "sports-field", "terrain", "field", "park", "open-area", "open-space",
+                     "trail", "sidewalk", "driveway", "terrace", "porch", "patio"]
+        positive_list = [positive for positive in positives]
+        positive_list.extend(["positive on "+positive for positive in positives])
+        positive_list.extend(["featured on "+positive for positive in positives])
 
-        raw_artists = load_list(config.data_path, 'artists.txt')
-        artists = [f"by {a}" for a in raw_artists]
-        artists.extend([f"inspired by {a}" for a in raw_artists])
+        raw_frames = load_list(config.data_path, 'frames.txt')
+        frames = [f"by {a}" for a in raw_frames]
+        frames.extend([f"inspired by {a}" for a in raw_frames])
 
         self._prepare_clip()
-        self.artists = LabelTable(artists, "artists", self)
-        self.flavors = LabelTable(load_list(config.data_path, 'flavors.txt'), "flavors", self)
-        self.mediums = LabelTable(load_list(config.data_path, 'mediums.txt'), "mediums", self)
-        self.movements = LabelTable(load_list(config.data_path, 'movements.txt'), "movements", self)
-        self.trendings = LabelTable(trending_list, "trendings", self)
+        self.frames = LabelTable(frames, "frames", self)
+        self.envs = LabelTable(load_list(config.data_path, 'envs.txt'), "envs", self)
+        self.ress = LabelTable(load_list(config.data_path, 'ress.txt'), "ress", self)
+        self.contexts = LabelTable(load_list(config.data_path, 'contexts.txt'), "contexts", self)
+        self.positives = LabelTable(positive_list, "positives", self)
         self.negative = LabelTable(load_list(config.data_path, 'negative.txt'), "negative", self)
 
         end_time = time.time()
@@ -202,55 +201,55 @@ class Interrogator():
             image_features /= image_features.norm(dim=-1, keepdim=True)
         return image_features
 
-    def interrogate_classic(self, image: Image, max_flavors: int=3, caption: Optional[str]=None) -> str:
+    def interrogate_classic(self, image: Image, max_envs: int=3, caption: Optional[str]=None) -> str:
         """Classic mode creates a prompt in a standard format first describing the image, 
-        then listing the artist, trending, movement, and flavor text modifiers."""
+        then listing the frame, positive, context, and env text modifiers."""
         caption = caption or self.generate_caption(image)
         image_features = self.image_to_features(image)
 
-        medium = self.mediums.rank(image_features, 1)[0]
-        artist = self.artists.rank(image_features, 1)[0]
-        trending = self.trendings.rank(image_features, 1)[0]
-        movement = self.movements.rank(image_features, 1)[0]
-        flaves = ", ".join(self.flavors.rank(image_features, max_flavors))
+        res = self.ress.rank(image_features, 1)[0]
+        frame = self.frames.rank(image_features, 1)[0]
+        positive = self.positives.rank(image_features, 1)[0]
+        context = self.contexts.rank(image_features, 1)[0]
+        flaves = ", ".join(self.envs.rank(image_features, max_envs))
 
-        if caption.startswith(medium):
-            prompt = f"{caption} {artist}, {trending}, {movement}, {flaves}"
+        if caption.startswith(res):
+            prompt = f"{caption} {frame}, {positive}, {context}, {flaves}"
         else:
-            prompt = f"{caption}, {medium} {artist}, {trending}, {movement}, {flaves}"
+            prompt = f"{caption}, {res} {frame}, {positive}, {context}, {flaves}"
 
         return _truncate_to_fit(prompt, self.tokenize)
 
-    def interrogate_fast(self, image: Image, max_flavors: int=32, caption: Optional[str]=None) -> str:
+    def interrogate_fast(self, image: Image, max_envs: int=32, caption: Optional[str]=None) -> str:
         """Fast mode simply adds the top ranked terms after a caption. It generally results in 
         better similarity between generated prompt and image than classic mode, but the prompts
         are less readable."""
         caption = caption or self.generate_caption(image)
         image_features = self.image_to_features(image)
-        merged = _merge_tables([self.artists, self.flavors, self.mediums, self.movements, self.trendings], self)
-        tops = merged.rank(image_features, max_flavors)
+        merged = _merge_tables([self.frames, self.envs, self.ress, self.contexts, self.positives], self)
+        tops = merged.rank(image_features, max_envs)
         return _truncate_to_fit(caption + ", " + ", ".join(tops), self.tokenize)
 
-    def interrogate_negative(self, image: Image, max_flavors: int = 32) -> str:
+    def interrogate_negative(self, image: Image, max_envs: int = 32) -> str:
         """Negative mode chains together the most dissimilar terms to the image. It can be used
         to help build a negative prompt to pair with the regular positive prompt and often 
-        improve the results of generated images particularly with Stable Diffusion 2."""
+        improve the results of generated images particularly with CLIPSeg."""
         image_features = self.image_to_features(image)
-        flaves = self.flavors.rank(image_features, self.config.flavor_intermediate_count, reverse=True)
+        flaves = self.envs.rank(image_features, self.config.env_intermediate_count, reverse=True)
         flaves = flaves + self.negative.labels
-        return self.chain(image_features, flaves, max_count=max_flavors, reverse=True, desc="Negative chain")
+        return self.chain(image_features, flaves, max_count=max_envs, reverse=True, desc="Negative chain")
 
-    def interrogate(self, image: Image, min_flavors: int=8, max_flavors: int=32, caption: Optional[str]=None) -> str:
+    def interrogate(self, image: Image, min_envs: int=8, max_envs: int=32, caption: Optional[str]=None) -> str:
         caption = caption or self.generate_caption(image)
         image_features = self.image_to_features(image)
 
-        merged = _merge_tables([self.artists, self.flavors, self.mediums, self.movements, self.trendings], self)
-        flaves = merged.rank(image_features, self.config.flavor_intermediate_count)
+        merged = _merge_tables([self.frames, self.envs, self.ress, self.contexts, self.positives], self)
+        flaves = merged.rank(image_features, self.config.env_intermediate_count)
         best_prompt, best_sim = caption, self.similarity(image_features, caption)
-        best_prompt = self.chain(image_features, flaves, best_prompt, best_sim, min_count=min_flavors, max_count=max_flavors, desc="Flavor chain")
+        best_prompt = self.chain(image_features, flaves, best_prompt, best_sim, min_count=min_envs, max_count=max_envs, desc="env chain")
 
-        fast_prompt = self.interrogate_fast(image, max_flavors, caption=caption)
-        classic_prompt = self.interrogate_classic(image, max_flavors, caption=caption)
+        fast_prompt = self.interrogate_fast(image, max_envs, caption=caption)
+        classic_prompt = self.interrogate_classic(image, max_envs, caption=caption)
         candidates = [caption, classic_prompt, fast_prompt, best_prompt]
         return candidates[np.argmax(self.similarities(image_features, candidates))]
 
