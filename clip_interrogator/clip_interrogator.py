@@ -120,12 +120,9 @@ class Interrogator():
                      "sports-field", "terrain", "field", "park", "open-area", "open-space",
                      "trail", "sidewalk", "driveway", "terrace", "porch", "patio"]
         positive_list = [positive for positive in positives]
-        positive_list.extend(["positive on "+positive for positive in positives])
-        positive_list.extend(["featured on "+positive for positive in positives])
+        positive_list.extend(["of "+positive for positive in positives])
 
         raw_frames = load_list(config.data_path, 'frames.txt')
-        frames = [f"by {a}" for a in raw_frames]
-        frames.extend([f"inspired by {a}" for a in raw_frames])
 
         self._prepare_clip()
         self.frames = LabelTable(frames, "frames", self)
@@ -215,9 +212,9 @@ class Interrogator():
         env = ", ".join(self.envs.rank(image_features, max_envs))
 
         if caption.startswith(res):
-            prompt = f"{frame}, {positive}, {context}, {env}, {caption}"
+            prompt = f"A {aerial} {frame} {positive} {context} {caption} in {env}}"
         else:
-            prompt = f"{res}, {frame}, {positive}, {context}, {env}, {caption}"
+            prompt = f"A {res} {aerial} {frame}, {positive} {context} {caption} in {env}"
 
         return _truncate_to_fit(prompt, self.tokenize)
 
