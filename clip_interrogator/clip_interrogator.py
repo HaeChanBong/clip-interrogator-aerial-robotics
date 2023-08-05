@@ -125,7 +125,7 @@ class Interrogator():
         raw_frames = load_list(config.data_path, 'frames.txt')
 
         self._prepare_clip()
-        self.frames = LabelTable(frames, "frames", self)
+        self.frames = LabelTable(raw_frames, "frames", self)
         self.envs = LabelTable(load_list(config.data_path, 'envs.txt'), "envs", self)
         self.res = LabelTable(load_list(config.data_path, 'res.txt'), "res", self)
         self.contexts = LabelTable(load_list(config.data_path, 'contexts.txt'), "contexts", self)
