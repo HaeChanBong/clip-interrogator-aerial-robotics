@@ -214,7 +214,7 @@ class Interrogator():
         if caption.startswith(res):
             prompt = f"A {positive} photo of {{}} in {env}"
         else:
-            prompt = f"A {res} photo of {{}} in {env}"
+            prompt = f"A {res} {positive} photo of {{}} in {env}"
 
         return _truncate_to_fit(prompt, self.tokenize)
 
