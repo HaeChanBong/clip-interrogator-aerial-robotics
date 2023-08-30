@@ -215,7 +215,7 @@ class Interrogator():
         flaves = ", ".join(self.flavors.rank(image_features, max_flavors))
 
         if caption.startswith(medium):
-            prompt = f"{{}},{caption} {artist}, {trending}, {movement}, {flaves}"
+            prompt = f"{{}}, {caption} {artist}, {trending}, {movement}, {flaves}"
         else:
             prompt = f"{{}}, {caption}, {medium} {artist}, {trending}, {movement}, {flaves}"
 
