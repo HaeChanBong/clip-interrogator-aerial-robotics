@@ -212,9 +212,9 @@ class Interrogator():
         env = ", ".join(self.envs.rank(image_features, max_envs))
 
         if caption.startswith(res):
-            prompt = f"A {positive} {frame} of {{}} in {env}, surrounded by {caption}."
+            prompt = f"A {positive} {frame} of {{}} in {env}, with {caption}."
         else:
-            prompt = f"A {res} {positive} {frame} of {{}} in {env}, surrounded by {caption}."
+            prompt = f"A {res} {positive} {frame} of {{}} in {env}, with {caption}."
 
         return _truncate_to_fit(prompt, self.tokenize)
 
