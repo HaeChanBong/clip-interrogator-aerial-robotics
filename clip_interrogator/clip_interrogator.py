@@ -35,7 +35,7 @@ class Config:
     clip_preprocess = None
 
     # blip settings
-    caption_max_length: int = 32
+    caption_max_length: int = 31
     caption_model_name: Optional[str] = 'blip-large' # use a key from CAPTION_MODELS or None
     caption_offload: bool = False
 
@@ -147,7 +147,7 @@ class Interrogator():
         best_prompt: str="", 
         best_sim: float=0, 
         min_count: int=8,
-        max_count: int=32, 
+        max_count: int=31, 
         desc="Chaining", 
         reverse: bool=False
     ) -> str:
