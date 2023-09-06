@@ -47,10 +47,10 @@ class Config:
     # interrogator settings
     cache_path: str = 'cache'   # path to store cached text embeddings
     download_cache: bool = True # when true, cached embeds are downloaded from huggingface
-    chunk_size: int = 64    # batch size for CLIP, use smaller for lower VRAM
+    chunk_size: int = 512    # batch size for CLIP, use smaller for lower VRAM
     data_path: str = os.path.join(os.path.dirname(__file__), 'data')
     device: str = ("mps" if torch.backends.mps.is_available() else "cuda" if torch.cuda.is_available() else "cpu")
-    env_intermediate_count: int = 64
+    env_intermediate_count: int = 512
     quiet: bool = False # when quiet progress bars are not shown
 
     def apply_low_vram_defaults(self):
